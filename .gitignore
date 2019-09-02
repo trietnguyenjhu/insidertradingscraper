@@ -1,0 +1,10 @@
+settings.ini
+__pycache__/
+.pytest_cache/
+.vscode/
+env/
+industryCode.py
+crawler.py
+query.sql
+**/*.log
+dBugAffected.txt

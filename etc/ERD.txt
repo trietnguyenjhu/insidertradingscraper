@@ -1,0 +1,31 @@
+Trades
+    filingDate - date of filing 
+    startingDate - date of first transaction
+    price - average purchase/sold price
+    quantity - number of shares
+    insider_id - foreign key to insider table
+    tradeType_id - foreign key to tradeType table
+
+Insider
+    name - individual/entity name
+    title - relation to company
+    sharesOwned - shares owned after latest transaction
+    asOfDate - timestamp of latest sharesOwned info
+    company_id - foreign key to company table
+
+Company
+    name
+    ticker - trading symbol 
+    cik - SEC central index key
+    industry_id - foreign key to industry table
+    lastUpdated - timestamp of last update
+    lastFiling - timestamp of last filing
+
+Industry
+    name - name of industry
+    sector - associated sector
+    subSector - associated subsector
+
+TradeType
+    code - SEC form 4 transaction code
+    type - code label
