@@ -1,6 +1,6 @@
 FROM python:3.7.4-slim-buster
 
-WORKDIR /root/Projects/insiderScraper/
+WORKDIR /root/Projects/insidertradingscraper/
 COPY insidertradingscraper/requirements.txt .
 
 # MSSQL ODBC - doesn't inclue bcp and sqlcmd
