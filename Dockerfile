@@ -12,7 +12,7 @@ RUN apt-get update &&\
     ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev
 RUN pip install -r requirements.txt
 
-COPY insidertradingscraper /root/Projects/insiderScraper/
+COPY insidertradingscraper /root/Projects/insidertradingscraper/
 COPY datsup /root/Projects/datsup/
 COPY dbadapter /root/Projects/dbadapter/
 
