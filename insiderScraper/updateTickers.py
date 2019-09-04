@@ -200,7 +200,7 @@ def insertToDb(database, data: datacontainer.Trades):
         # update insider sharesOwned and asOfDate
         currentFinalDate = sql.getCurrentFinalDate(database, insiderId)
         if currentFinalDate is None or \
-            currentFinalDate < np.datetime64(finalDate):
+            np.datetime64(currentFinalDate) < np.datetime64(finalDate):
             sql.updateInsiderMutables(
                 database, insiderId, finalSharesOwned, finalDate)
 
@@ -231,7 +231,12 @@ def insertToDb(database, data: datacontainer.Trades):
             #   reorder columns to match with db columns ordering
             tradeTypeWorkingData = tradeTypeWorkingData[[
                 'insider_id', 'tradetype_id', 'company_id', 'filingDate',
-                'quantity', 'startingDate', 'price', 'quantity']]
+                'quantity', 'startingDate', 'price']]
+
+            tradeTypeWorkingData['quantity'] = \
+                tradeTypeWorkingData['quantity'].map(lambda x: float(x))
+            tradeTypeWorkingData['price'] = \
+                tradeTypeWorkingData['price'].map(lambda x: float(x))
 
             if SQLSERVERFLAG:
                 baseSql = \

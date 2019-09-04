@@ -47,6 +47,7 @@ def updateLastFilingTimeStamp(database):
                 where t2.company_id = c.company_id
             )
         """
+    if SQLSERVERFLAG: sql = "exec sp_updateCompanyLastFiling"
     database.runSQL(sql, verify=True)
 
 
@@ -79,10 +80,6 @@ def getCurrentFinalDate(database, insiderId):
     """Get the current Insider.finalDate"""
     result = database.getData(
         f'select asOfDate from {schema}Insider where insider_id = {insiderId}')
-    print(result)
-    # print(type(result))
-    # print(len(result))
-    # print(result['asOfDate'].values[0])
     return None if result is None else result['asOfDate'].values[0]
 
 
@@ -98,13 +95,32 @@ def setupSqlServerSP(database):
     sql = \
         """
             create procedure sp_deleteDuplicateTrades as
-                delete from insiderTrading.Trade
-                where trade_id in (
-                    select max(trade_id)
-                    from insiderTrading.Trade
-                    group by filingDate, startingDate, price, quantity, 
-                        insider_id, company_id, tradetype_id
-                    having count(1) > 1
+            delete from insiderTrading.Trade
+            where trade_id in (
+                select max(trade_id)
+                from insiderTrading.Trade
+                group by filingDate, startingDate, price, quantity, 
+                    insider_id, company_id, tradetype_id
+                having count(1) > 1
             )
+
+            create procedure sp_updateCompanyLastFiling as
+            with t as (
+                select insider_id, max(filingDate) insiderLastUpdate
+                from insiderTrading.Trade
+                group by insider_id
+            ), t2 as (
+                select max(t.insiderLastUpdate) companyLastUpdate, i.company_id
+                from t
+                inner join insiderTrading.Insider i on t.insider_id = i.insider_id
+                group by i.company_id
+            )
+            update c 
+            set lastFiling = (
+                select companyLastUpdate
+                from t2
+                where t2.company_id = c.company_id
+            )
+            from insiderTrading.Company c
         """
     database.runSQL(sql, verify=True)
