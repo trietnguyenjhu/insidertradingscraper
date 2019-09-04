@@ -6,7 +6,6 @@ def run(database):
     """Drop all tables and recreate"""
 
     # drop tables
-    schema = 'insiderTrading.'
     dropTables = 'Trade TradeType Insider Company Industry'.split()
     dropTables = [f'{schema}{x}' for x in dropTables]
     for table in dropTables:
@@ -38,7 +37,7 @@ def run(database):
             lastUpdated='datetime2',
             lastFiling='datetime2'),
         foreignKeys=dict(
-            industry_id='{schema}Industry')
+            industry_id=f'{schema}Industry')
     )
 
     database.createTable(
@@ -49,7 +48,7 @@ def run(database):
             sharesOwned='numeric',
             asOfDate='datetime2'),
         foreignKeys=dict(
-            company_id='{schema}Company')
+            company_id=f'{schema}Company')
     )
 
     database.createTable(
@@ -57,10 +56,10 @@ def run(database):
         dataVars=dict(
             filingDate='datetime2',
             startingDate='date',
-            price='numeric',
+            price='float',
             quantity='numeric'),
         foreignKeys=dict(
-            insider_id='{schema}Insider',
-            company_id='{schema}Company',
-            tradetype_id='{schema}TradeType')
+            insider_id=f'{schema}Insider',
+            company_id=f'{schema}Company',
+            tradetype_id=f'{schema}TradeType')
     )
