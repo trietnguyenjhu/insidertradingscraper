@@ -21,6 +21,7 @@ def removeDuplicateTrades(database):
                     t1.trade_id < t2.trade_id
             )
         """
+    if SQLSERVERFLAG: sql = "exec sp_deleteDuplicateTrades"
     database.runSQL(sql, verify=True)
 
 
@@ -79,8 +80,31 @@ def getCurrentFinalDate(database, insiderId):
     result = database.getData(
         f'select asOfDate from {schema}Insider where insider_id = {insiderId}')
     print(result)
-    print(type(result))
-    print(len(result))
-    print(result.loc[0].any())
-    print(result['asOfDate'].values[0])
-    return None if not result.loc[0].any() else result['asOfDate'].values[0]
+    # print(type(result))
+    # print(len(result))
+    # print(result['asOfDate'].values[0])
+    return None if result is None else result['asOfDate'].values[0]
+
+
+def checkSqlString(sql, values):
+    """Implement database.cursor.mogrify(sql, params)"""
+    unique = "%PARAMETER%"
+    sql = sql.replace("?", unique)
+    for v in values: sql = sql.replace(unique, repr(v), 1)
+    return sql
+
+
+def setupSqlServerSP(database):
+    sql = \
+        """
+            create procedure sp_deleteDuplicateTrades as
+                delete from insiderTrading.Trade
+                where trade_id in (
+                    select max(trade_id)
+                    from insiderTrading.Trade
+                    group by filingDate, startingDate, price, quantity, 
+                        insider_id, company_id, tradetype_id
+                    having count(1) > 1
+            )
+        """
+    database.runSQL(sql, verify=True)
