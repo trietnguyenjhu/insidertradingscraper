@@ -1,64 +1,66 @@
+import globalconst
+
+schema = globalconst.SCHEMA
+
 def run(database):
     """Drop all tables and recreate"""
 
+    # drop tables
+    schema = 'insiderTrading.'
+    dropTables = 'Trade TradeType Insider Company Industry'.split()
+    dropTables = [f'{schema}{x}' for x in dropTables]
+    for table in dropTables:
+        database.dropTableIfExists(table, verify=True)
+
     database.createTable(
-        table='Trade',
+        table=f'{schema}TradeType',
         dataVars=dict(
-            filingDate='timestamp',
-            startingDate='timestamp',
+            code='char(1)',
+            type='varchar(20)'),
+        foreignKeys=dict()
+    )
+
+    database.createTable(
+        table=f'{schema}Industry',
+        dataVars=dict(
+            name='varchar(100)',
+            sector='varchar(100)',
+            subSector='varchar(100)'),
+        foreignKeys=dict()
+    )
+
+    database.createTable(
+        table=f'{schema}Company',
+        dataVars=dict(
+            name='varchar(100)',
+            ticker='varchar(20)',
+            cik='numeric',
+            lastUpdated='datetime2',
+            lastFiling='datetime2'),
+        foreignKeys=dict(
+            industry_id='{schema}Industry')
+    )
+
+    database.createTable(
+        table=f'{schema}Insider',
+        dataVars=dict(
+            name='varchar(100)',
+            title='varchar(100)',
+            sharesOwned='numeric',
+            asOfDate='datetime2'),
+        foreignKeys=dict(
+            company_id='{schema}Company')
+    )
+
+    database.createTable(
+        table=f'{schema}Trade',
+        dataVars=dict(
+            filingDate='datetime2',
+            startingDate='date',
             price='numeric',
             quantity='numeric'),
-        foreignKeys=[
-            'insider',
-            'tradetype'],
-        drop=True,
-        verify=True
-    )
-
-    database.createTable(
-        table='Insider',
-        dataVars=dict(
-            name='varchar',
-            title='varchar',
-            sharesOwned='numeric',
-            asOfDate='timestamp'),
-        foreignKeys=[
-            'company'],
-        drop=True,
-        verify=True
-    )
-
-    database.createTable(
-        table='Company',
-        dataVars=dict(
-            name='varchar',
-            ticker='varchar',
-            cik='numeric',
-            lastUpdated='timestamp',
-            lastFiling='timestamp'),
-        foreignKeys=[
-            'industry'],
-        drop=True,
-        verify=True
-    )
-
-    database.createTable(
-        table='Industry',
-        dataVars=dict(
-            name='varchar',
-            sector='varchar',
-            subSector='varchar'),
-        foreignKeys=[],
-        drop=True,
-        verify=True
-    )
-
-    database.createTable(
-        table='TradeType',
-        dataVars=dict(
-            code='varchar',
-            type='varchar'),
-        foreignKeys=[],
-        drop=True,
-        verify=True
+        foreignKeys=dict(
+            insider_id='{schema}Insider',
+            company_id='{schema}Company',
+            tradetype_id='{schema}TradeType')
     )

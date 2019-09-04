@@ -15,9 +15,6 @@ import dateRange
 import oldestUpdate
 from exceptions import InvalidModeError
 
-SQLSERVERFLAG = True
-SCHEMA = 'insiderTrading.'
-
 
 def main():
 

@@ -1,13 +1,18 @@
 """Generate sql database operations"""
 from datsup.psqladapter import DatabaseManager
+import globalconst
+
+
+SQLSERVERFLAG = globalconst.SQLSERVERFLAG
+schema = globalconst.SCHEMA
 
 
 def removeDuplicateTrades(database):
     """Delete all duplicate trade entries"""
     sql = \
-        """
-            delete from trade t1 where exists (
-                select 1 from trade t2
+        f"""
+            delete from {schema}Trade t1 where exists (
+                select 1 from {schema}Trade t2
                 where
                     t1.insider_id = t2.insider_id and
                     t1.filingDate = t2.filingDate and
@@ -23,18 +28,18 @@ def updateLastFilingTimeStamp(database):
     """Full update of the lastFiling field in Company table"""
 
     sql = \
-        """
+        f"""
             with t as (
                 select insider_id, max(filingDate) insiderLastUpdate
-                from trade
+                from {schema}Trade
                 group by insider_id
             ), t2 as (
                 select max(t.insiderLastUpdate) companyLastUpdate, i.company_id
                 from t
-                inner join insider i on t.insider_id = i.insider_id
+                inner join {schema}Insider i on t.insider_id = i.insider_id
                 group by i.company_id
             )
-            update company c
+            update {schema}Company c
             set lastFiling = (
                 select companyLastUpdate
                 from t2
@@ -48,10 +53,11 @@ def updateCompanyLastUpdates(database: DatabaseManager, ticker: str):
     """Update lastUpdate field in Company table with current timestamp"""
     sql = \
         f"""
-            update company
+            update {schema}Company
             set lastUpdated = now()
             where ticker = '{ticker}'
         """
+    if SQLSERVERFLAG: sql = sql.replace('now()', 'SYSUTCDATETIME()')
     database.runSQL(sql, verify=True)
 
 
@@ -59,7 +65,7 @@ def updateInsiderMutables(database, insiderId, sharesOwned, asOfDate):
     """"""
     sql = \
         f"""
-            update insider
+            update {schema}Insider
             set
                 sharesOwned = {sharesOwned},
                 asOfDate = '{asOfDate}'
@@ -70,6 +76,11 @@ def updateInsiderMutables(database, insiderId, sharesOwned, asOfDate):
 
 def getCurrentFinalDate(database, insiderId):
     """Get the current Insider.finalDate"""
-    return database.getData(
-        f'select asOfDate from insider where insider_id = {insiderId}')[
-            'asofdate'].values[0]
+    result = database.getData(
+        f'select asOfDate from {schema}Insider where insider_id = {insiderId}')
+    print(result)
+    print(type(result))
+    print(len(result))
+    print(result.loc[0].any())
+    print(result['asOfDate'].values[0])
+    return None if not result.loc[0].any() else result['asOfDate'].values[0]

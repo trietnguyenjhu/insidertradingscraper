@@ -11,16 +11,21 @@ import datetime
 from datsup import nanhandler as nan
 from datsup import log
 from datsup import fileio
-from dataTypes import Company, Trades
+import datacontainer
 from exceptions import NoDataError
 import sql
+import globalconst
 
+schema = globalconst.SCHEMA
+SQLSERVERFLAG = globalconst.SQLSERVERFLAG
 
 def run(database, logger: log.LogManager, tickers: np.ndarray):
     """Main update logic"""
+
+    database.cursor.fast_executemany = True
     count = 0
     random.shuffle(tickers)
-
+    
     for ticker in tickers:
         now = datetime.datetime.now()
         print(f'{now.month:02.0f}/{now.day:02.0f}/{now.year:02.0f} ' +
@@ -95,13 +100,13 @@ def download(url: str) -> dict:
     industry = companyInfo[2].strip().replace("'", "''")
     cik = re.findall(r'\d+', ''.join(companyInfo))[0]
 
-    company = Company(name, ticker, cik, sector, subSector, industry)
-    rawTrades = Trades(table, company)
-
+    company = datacontainer.Company(
+        name, ticker, cik, sector, subSector, industry)
+    rawTrades = datacontainer.Trades(table, company)
     return rawTrades
 
 
-def process(rawTrades: Trades):
+def process(rawTrades: datacontainer.Trades):
     """Clean raw data"""
     rawTrades.table['price'] = rawTrades.table['price'].map(
         lambda x: x.strip('$').replace(',', ''))
@@ -113,7 +118,6 @@ def process(rawTrades: Trades):
         lambda x: str(x).replace("'", "''"))
     rawTrades.table['insiderTitle'] = rawTrades.table['insiderTitle'].map(
         lambda x: str(x).replace("'", "''"))
-
     rawTrades.table = nan.replaceDefects(
         rawTrades.table,
         'insiderName',
@@ -122,18 +126,18 @@ def process(rawTrades: Trades):
     return rawTrades
 
 
-def insertToDb(database, data: Trades):
+def insertToDb(database, data: datacontainer.Trades):
     """Map data structure to database"""
     # process industry
     selectSql = \
         f"""
             select industry_id
-            from industry
+            from {schema}Industry
             where name = '{data.company.industry}'
         """
     insertSql = \
         f"""
-            insert into industry (name, sector, subSector)
+            insert into {schema}Industry (name, sector, subSector)
             values (
                 '{data.company.industry}',
                 '{data.company.sector}',
@@ -145,12 +149,12 @@ def insertToDb(database, data: Trades):
     selectSql = \
         f"""
             select company_id
-            from company
+            from {schema}Company
             where cik = {data.company.cik}
         """
     insertSql = \
         f"""
-            insert into company (name, ticker, cik, industry_id)
+            insert into {schema}Company (name, ticker, cik, industry_id)
             values (
                 '{data.company.name}',
                 '{data.company.ticker}',
@@ -179,12 +183,12 @@ def insertToDb(database, data: Trades):
         selectSql = \
             f"""
                 select insider_id
-                from insider
+                from {schema}Insider
                 where name = '{insider}' and company_id = {companyId}
             """
         insertSql = \
             f"""
-                insert into insider (
+                insert into {schema}Insider (
                     name, title, company_id
                 )
                 values (
@@ -208,12 +212,12 @@ def insertToDb(database, data: Trades):
             selectSql = \
                 f"""
                     select tradetype_id
-                    from tradetype
+                    from {schema}TradeType
                     where code = '{tradeTypeCode}'
                 """
             insertSql = \
                 f"""
-                    insert into TradeType (code, type)
+                    insert into {schema}TradeType (code, type)
                     values ('{tradeTypeCode}', '{tradeTypeType}')
                 """
             tradeTypeId = database.queryId(selectSql, insertSql)
@@ -222,21 +226,34 @@ def insertToDb(database, data: Trades):
                 'filingDate', 'startingDate', 'price', 'quantity']]
             tradeTypeWorkingData['insider_id'] = insiderId
             tradeTypeWorkingData['tradetype_id'] = tradeTypeId
+            tradeTypeWorkingData['company_id'] = companyId
 
             #   reorder columns to match with db columns ordering
             tradeTypeWorkingData = tradeTypeWorkingData[[
-                'insider_id', 'tradetype_id', 'filingDate',
-                'startingDate', 'price', 'quantity']]
+                'insider_id', 'tradetype_id', 'company_id', 'filingDate',
+                'quantity', 'startingDate', 'price', 'quantity']]
 
-            # https://stackoverflow.com/questions/1869973/recreating-postgres-copy-directly-in-python
-            f = StringIO()
-            ioWriteString = '\n'.join([
-                '\t'.join(list(map(str, x))) for x in tradeTypeWorkingData.values])
-            f.write(ioWriteString)
-            f.seek(0)
+            if SQLSERVERFLAG:
+                baseSql = \
+                    f"""
+                    INSERT INTO {schema}Trade
+                    (insider_id, tradetype_id, company_id, filingDate, 
+                    quantity, startingDate, price)
+                    values (?, ?, ?, ?, ?, ?, ?)
+                    """
+                params = list(tradeTypeWorkingData.itertuples(False, None))
+                database.cursor.executemany(baseSql, params)
 
-            database.cursor.copy_from(f, 'Trade', columns=(
-                'insider_id', 'tradetype_id', 'filingDate',
-                'startingDate', 'price', 'quantity'))
-            database.commit()
+            else:
+                # Postgres bulk insert implementation
+                # https://stackoverflow.com/questions/1869973/recreating-postgres-copy-directly-in-python
+                f = StringIO()
+                ioWriteString = '\n'.join([
+                    '\t'.join(list(map(str, x))) for x in tradeTypeWorkingData.values])
+                f.write(ioWriteString)
+                f.seek(0)
+                database.cursor.copy_from(f, 'Trade', columns=(
+                    'insider_id', 'tradetype_id', 'filingDate',
+                    'startingDate', 'price', 'quantity'))
+                database.commit()
     sql.removeDuplicateTrades(database)
