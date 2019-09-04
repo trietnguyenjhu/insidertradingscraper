@@ -5,6 +5,9 @@ import numpy as np
 from datsup.psqladapter import DatabaseManager
 from datsup import datahandling as dh
 
+import globalconst
+
+schema = globalconst.SCHEMA
 
 def processTickerCSV(path: str):
     """Filter out non-equity tickers"""
@@ -25,6 +28,6 @@ def filterTickersFromCSV(
 def filterTickersFromDb(tickers: np.array, database: DatabaseManager):
     """Filter out tickers already in database"""
     fArray = database.getData(
-        'select ticker from company')['ticker'].values
+        f'select ticker from {schema}Company')['ticker'].values
     tickers = dh.filterArray(tickers, fArray)
     return tickers
