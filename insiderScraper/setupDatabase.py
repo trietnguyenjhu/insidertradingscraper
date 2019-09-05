@@ -22,16 +22,16 @@ def run(database):
     database.createTable(
         table=f'{schema}Industry',
         dataVars=dict(
-            name='varchar(100)',
-            sector='varchar(100)',
-            subSector='varchar(100)'),
+            name='varchar(200)',
+            sector='varchar(200)',
+            subSector='varchar(200)'),
         foreignKeys=dict()
     )
 
     database.createTable(
         table=f'{schema}Company',
         dataVars=dict(
-            name='varchar(100)',
+            name='varchar(300)',
             ticker='varchar(20)',
             cik='numeric',
             lastUpdated='datetime2',
@@ -43,8 +43,8 @@ def run(database):
     database.createTable(
         table=f'{schema}Insider',
         dataVars=dict(
-            name='varchar(100)',
-            title='varchar(100)',
+            name='varchar(300)',
+            title='varchar(200)',
             sharesOwned='numeric',
             asOfDate='datetime2'),
         foreignKeys=dict(
