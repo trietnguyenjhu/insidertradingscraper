@@ -27,7 +27,8 @@ def filterTickersFromCSV(
 
 def filterTickersFromDb(tickers: np.array, database: DatabaseManager):
     """Filter out tickers already in database"""
-    fArray = database.getData(
-        f'select ticker from {schema}Company')['ticker'].values
-    tickers = dh.filterArray(tickers, fArray)
+    fDf = database.getData(
+        f'select ticker from {schema}Company')
+    if fDf is not None:
+        tickers = dh.filterArray(tickers, fDf['ticker'].values)
     return tickers
