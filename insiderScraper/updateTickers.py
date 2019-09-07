@@ -82,7 +82,7 @@ def download(url: str) -> dict:
     try:
         table = pd.read_html(str(soup.findAll('table', {'class': 'tinytable'})))[0]
     except ValueError as e:
-        raise ValueError(e.__str__() + f' - {ticker.upper()}'
+        raise ValueError(e.__str__() + f' - {ticker.upper()}')
 
     if len(table.columns) != 16:  # unable to download error handling
         raise NoDataError(f'Unable to find data for {ticker.upper()}')
