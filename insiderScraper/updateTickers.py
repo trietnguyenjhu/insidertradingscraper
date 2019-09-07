@@ -38,7 +38,7 @@ def run(database, logger: log.LogManager, tickers: np.ndarray):
         while flagNextPage and page < 10:  # for > 1000 trade entries
             try:
                 rawData = download(generateUrl(ticker, page))
-            except NoDataError as e:
+            except (NoDataError, ValueError) as e:
                 fileio.appendLine('data/elimTickers.csv', ticker)
                 logger.logError(e)
             else:
@@ -75,12 +75,16 @@ def generateUrl(ticker: str, page: int) -> str:
 def download(url: str) -> dict:
     """Download and map raw data"""
     response = requests.get(url)
+    ticker = re.findall(
+            r'(?<=http://openinsider.com/screener\?s=)\w+', url)[0]
     soup = BeautifulSoup(response.text, 'lxml')
-    table = pd.read_html(str(soup.findAll('table', {'class': 'tinytable'})))[0]
+
+    try:
+        table = pd.read_html(str(soup.findAll('table', {'class': 'tinytable'})))[0]
+    except ValueError as e:
+        raise ValueError(e.__str__() + f' - {ticker.upper()}'
 
     if len(table.columns) != 16:  # unable to download error handling
-        ticker = re.findall(
-            r'(?<=http://openinsider.com/screener\?s=)\w+', url)[0]
         raise NoDataError(f'Unable to find data for {ticker.upper()}')
 
     table = table.drop(['X', '1d', '1w', '1m', '6m'], axis=1)
