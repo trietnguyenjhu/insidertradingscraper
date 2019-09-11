@@ -35,7 +35,7 @@ def run(database, logger: log.LogManager, tickers: np.ndarray):
         page = 1
         flagNextPage = True
 
-        while flagNextPage and page < 10:  # for > 1000 trade entries
+        while flagNextPage and page <= 10:  # for > 1000 trade entries
             try:
                 rawData = download(generateUrl(ticker, page))
             except (NoDataError, ValueError) as e:
