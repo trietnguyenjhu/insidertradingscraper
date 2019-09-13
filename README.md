@@ -4,7 +4,7 @@
 Download insider trading data to a SQL Server database. 
 
 
-insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup) and [dbadapter](https://github.com/trietnguyenjhu/dbadapter) packages . The dir should be arranged in the following manner
+insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup) and [dbadapter](https://github.com/trietnguyenjhu/dbadapter) packages. The dir should be arranged in the following manner
 
 
     +-- datsup
@@ -19,7 +19,7 @@ insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup
     |   +-- ...
 
 
-To run from the CLI:
+The following modes are available through the command line interface (CLI):
 
     python insiderScraper/app.py --create-tables --confirm-reset
     python insiderScraper/app.py --update-tickers amzn fb msft
