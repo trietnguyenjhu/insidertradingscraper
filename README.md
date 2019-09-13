@@ -9,13 +9,14 @@ insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup
 
     +-- datsup
     |   +-- ...
+    +-- dbadapter
+    |   +-- ...
     +-- insidertradingscraper
     |   +-- src
     |   +-- settings.ini
     |   +-- README.md
     |   +-- ...
-    +-- dbadapter
-    |   +-- ...
+
 
 To run from the CLI:
 
