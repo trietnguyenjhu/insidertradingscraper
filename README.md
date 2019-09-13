@@ -4,7 +4,7 @@
 Download insider trading data to a SQL Server database. 
 
 
-insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup) and [dbadapter](https://github.com/trietnguyenjhu/dbadapter) packages. The dir should be arranged in the following manner
+insidertradingscraper can be automatically setup using docker-compose through [docker-insidertradingscraper](https://github.com/trietnguyenjhu/docker-insidertradingscraper). Alternatively, the apps requires [datsup](https://github.com/trietnguyenjhu/datsup) and [dbadapter](https://github.com/trietnguyenjhu/dbadapter) packages. The dir should be arranged in the following manner
 
 
     +-- datsup
@@ -28,7 +28,7 @@ The following modes are available through the command line interface (CLI):
     python insiderScraper/app.py --oldest-updates 100
 
 
-settings.ini should be setup prior to running: 
+settings.ini should be setup and located in the default working directory (insidertradingscraper) prior to running:
 
     [auth]
     host: hostName
