@@ -1,20 +1,21 @@
-# insider_rds
+# insidertradingscraper
 
 
-Download insider trading data to a PostgreSQL database. 
+Download insider trading data to a SQL Server database. 
 
 
-Insider_RDS requires the customized [datsup](https://github.com/trietnguyenjhu/datsup) package. The dir should be arranged so that
+insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup) and [dbadapter](https://github.com/trietnguyenjhu/dbadapter) packages . The dir should be arranged in the following manner
 
 
     +-- datsup
     |   +-- ...
-    +-- insider_rds
+    +-- insidertradingscraper
     |   +-- src
     |   +-- settings.ini
     |   +-- README.md
     |   +-- ...
-
+    +-- dbadapter
+    |   +-- ...
 
 To run from the CLI:
 
