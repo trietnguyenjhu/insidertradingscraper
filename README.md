@@ -11,7 +11,7 @@ insidertradingscraper can be automatically setup using docker-compose through [d
     |   +-- ...
     +-- dbadapter
     |   +-- ...
-    +-- insidertradingscraper (working dir)
+    +-- insidertradingscraper (dafult working dir)
     |   +-- insiderScraper
     |       +-- ...
     |   +-- settings.ini
@@ -28,7 +28,7 @@ The following modes are available through the command line interface (CLI):
     python insiderScraper/app.py --oldest-updates 100
 
 
-settings.ini should be setup and located in the default working directory (insidertradingscraper) prior to running:
+settings.ini should be setup and located in the default working directory prior to running:
 
     [auth]
     host: hostName
