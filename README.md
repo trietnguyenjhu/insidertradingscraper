@@ -11,8 +11,8 @@ insidertradingscraper requires [datsup](https://github.com/trietnguyenjhu/datsup
     |   +-- ...
     +-- dbadapter
     |   +-- ...
-    +-- insidertradingscraper
-    |   +-- src
+    +-- insidertradingscraper (working dir)
+    |   +-- insiderScraper
     |   +-- settings.ini
     |   +-- README.md
     |   +-- ...
